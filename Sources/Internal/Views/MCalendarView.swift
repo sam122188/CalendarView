@@ -15,6 +15,7 @@ public struct MCalendarView: View {
     @StateObject var selectedData: Data.MCalendarView
     let monthsData: [Data.MonthView]
     let configData: CalendarConfig
+    @State var useSingleMonthView = false
 
 
     init(_ selectedDate: Binding<Date?>?, _ selectedRange: Binding<MDateRange?>?, _ configBuilder: (CalendarConfig) -> CalendarConfig) {
@@ -34,16 +35,26 @@ private extension MCalendarView {
         configData.weekdaysView().erased()
     }
     func createScrollView() -> some View { ScrollViewReader { reader in
-        ScrollView(showsIndicators: false) {
+        var limitBehavior = ViewAlignedScrollTargetBehavior.LimitBehavior.never
+        if (self.useSingleMonthView) {
+            limitBehavior = .automatic
+            if #available(iOS 18, *) {
+                limitBehavior = .alwaysByOne
+            }
+        }
+        
+        return ScrollView(showsIndicators: false) {
             LazyVStack(spacing: configData.monthsSpacing) {
                 ForEach(monthsData, id: \.month, content: createMonthItem)
             }
             .padding(.top, configData.monthsPadding.top)
             .padding(.bottom, configData.monthsPadding.bottom)
             .background(configData.monthsViewBackground)
+            .scrollTargetLayout()
         }
         .onAppear() { scrollToDate(reader, animatable: false) }
         .onChange(of: configData.scrollDate) { _ in scrollToDate(reader, animatable: true) }
+        .scrollTargetBehavior(.viewAligned(limitBehavior: limitBehavior))
     }}
 }
 private extension MCalendarView {
