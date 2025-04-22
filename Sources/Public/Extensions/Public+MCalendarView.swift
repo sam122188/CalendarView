@@ -14,7 +14,8 @@ import SwiftUI
 extension MCalendarView {
     public init(selectedDate: Binding<Date?>?, selectedRange: Binding<MDateRange?>?, configBuilder: (CalendarConfig) -> CalendarConfig = { $0 }) { self.init(selectedDate, selectedRange, configBuilder) }
     public func singleMonthView() -> some View {
-        self.useSingleMonthView = true
-        return self
+        var tmp = self
+        tmp.useSingleMonthView = true
+        return tmp
     }
 }

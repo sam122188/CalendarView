@@ -15,18 +15,24 @@ public struct MCalendarView: View {
     @StateObject var selectedData: Data.MCalendarView
     let monthsData: [Data.MonthView]
     let configData: CalendarConfig
-    @State var useSingleMonthView = false
+    var useSingleMonthView = false
+    let pageableViewDataSource: SingleMonthPageableViewDataSource
 
 
     init(_ selectedDate: Binding<Date?>?, _ selectedRange: Binding<MDateRange?>?, _ configBuilder: (CalendarConfig) -> CalendarConfig) {
         self._selectedData = .init(wrappedValue: .init(selectedDate, selectedRange))
         self.configData = configBuilder(.init())
         self.monthsData = .generate()
+        self.pageableViewDataSource = SingleMonthPageableViewDataSource(monthData: self.monthsData, selectedData: _selectedData, configData: configData)
     }
     public var body: some View {
         VStack(spacing: 12) {
             createWeekdaysView()
-            createScrollView()
+            if (self.useSingleMonthView) {
+                SingleMonthPageableView(dataSource: pageableViewDataSource)
+            } else {
+                createScrollView()
+            }
         }
     }
 }
@@ -35,14 +41,6 @@ private extension MCalendarView {
         configData.weekdaysView().erased()
     }
     func createScrollView() -> some View { ScrollViewReader { reader in
-        var limitBehavior = ViewAlignedScrollTargetBehavior.LimitBehavior.never
-        if (self.useSingleMonthView) {
-            limitBehavior = .automatic
-            if #available(iOS 18, *) {
-                limitBehavior = .alwaysByOne
-            }
-        }
-        
         return ScrollView(showsIndicators: false) {
             LazyVStack(spacing: configData.monthsSpacing) {
                 ForEach(monthsData, id: \.month, content: createMonthItem)
@@ -50,11 +48,9 @@ private extension MCalendarView {
             .padding(.top, configData.monthsPadding.top)
             .padding(.bottom, configData.monthsPadding.bottom)
             .background(configData.monthsViewBackground)
-            .scrollTargetLayout()
         }
         .onAppear() { scrollToDate(reader, animatable: false) }
         .onChange(of: configData.scrollDate) { _ in scrollToDate(reader, animatable: true) }
-        .scrollTargetBehavior(.viewAligned(limitBehavior: limitBehavior))
     }}
 }
 private extension MCalendarView {
