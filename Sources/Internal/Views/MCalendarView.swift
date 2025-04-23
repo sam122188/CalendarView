@@ -55,20 +55,7 @@ private extension MCalendarView {
 }
 private extension MCalendarView {
     func createMonthItem(_ data: Data.MonthView) -> some View {
-        VStack(spacing: configData.monthLabelDaysSpacing) {
-            createMonthLabel(data.month)
-            createMonthView(data)
-        }
-    }
-}
-private extension MCalendarView {
-    func createMonthLabel(_ month: Date) -> some View {
-        configData.monthLabel(month)
-            .erased()
-            .onAppear { onMonthChange(month) }
-    }
-    func createMonthView(_ data: Data.MonthView) -> some View {
-        MonthView(selectedDate: $selectedData.date, selectedRange: $selectedData.range, data: data, config: configData)
+        MonthItem(data: data, configData: self.configData, selectedData: self.selectedData)
     }
 }
 
@@ -80,5 +67,4 @@ private extension MCalendarView {
         let scrollDate = date.start(of: .month)
         withAnimation(animatable ? .default : nil) { reader.scrollTo(scrollDate, anchor: .center) }
     }
-    func onMonthChange(_ date: Date) { configData.onMonthChange(date) }
 }

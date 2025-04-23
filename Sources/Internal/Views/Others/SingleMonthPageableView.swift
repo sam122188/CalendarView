@@ -43,8 +43,8 @@ class SingleMonthPageableViewDataSource: NSObject, UIPageViewControllerDataSourc
               })
         else { return nil }
         
-        let monthView = MonthView(selectedDate: self.$selectedData.date, selectedRange: self.$selectedData.range, data: monthData[initialIndex], config: self.configData)
-        return UIHostingController(rootView: monthView)
+        let monthItemView = MonthItem(data: monthData[initialIndex], configData: self.configData, selectedData: self.selectedData)
+        return UIHostingController(rootView: monthItemView)
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
